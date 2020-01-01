@@ -20,7 +20,7 @@ Clone the project - (https://github.com/stevenduval/interactive_form) -  and ope
 
 ## Authors
 
-* **Steven Duval** - *JavaScript code*
+* **Steven Duval** - *jQuery code*
 * **TreeHouse** - *HTML & CSS code* - (https://teamtreehouse.com)
 
 ## License
