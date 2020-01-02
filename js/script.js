@@ -1,6 +1,12 @@
+/******************************************
+Treehouse Techdegree:
+FSJS project 3 - Interactive Form
+******************************************/
+
 //set global vars
 let activityTotal = 0;
 const $shirtOptions = $('#color option');
+
 //run on pageload
 $( document ).ready(function() {
     // focus on name input
@@ -86,4 +92,40 @@ $('#payment').on('change', function(){
     } else if ($selectedPayment === 'Bitcoin') {
         $('#bitcoin').show();
     }
+});
+
+//form validation
+
+$('body').on('keyup blur', 'input', function(){
+    const $activeInput = $(this).attr('name');
+    const $activeInputVal = $(this).val();
+    const $applyInvalidBackground = function(element) {$(element).css('backgroundColor', 'red')};
+    const $removeInvalidBackground = function(element) {$(element).css('backgroundColor', '')};
+    
+    if ($activeInput === 'user-name') {
+        $('.error-name').remove();
+        $removeInvalidBackground($(this));
+        if ($activeInputVal.length === 0) {
+            $(this).prev().append('<span class="error-name" style="color: red;"> This field cannot be empty.</span>');
+            $applyInvalidBackground($(this));
+        }
+    }
+
+    if ($activeInput === 'user-email') {
+        $('.error-email').remove();
+        $removeInvalidBackground($(this));
+        regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        
+        if ($activeInputVal.length === 0){
+            console.log('empty');
+            $(this).prev().append('<span class="error-email" style="color: red;"> This field cannot be empty.</span>');
+            $applyInvalidBackground($(this));
+        } else if (! regex.test($activeInputVal)) {
+            console.log('invalid');
+            $(this).prev().append('<span class="error-email" style="color: red;"> Your email is not properly formatted.</span>');
+            $applyInvalidBackground($(this));
+        }
+    }
+    
+    ^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$;
 });
