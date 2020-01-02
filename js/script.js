@@ -22,7 +22,7 @@ $( document ).ready(function() {
 });
 
 // job role section
-$('#title').on('change', function(){
+$('#title').on('change', function() {
     // get value of selected option
     const $selectedJob = $('#title option:selected').attr('value');
     // ensure that the other job role input is hidden until selected
@@ -58,7 +58,7 @@ $('#design').on('change', function() {
 });
 
 // activity section
-$('.activities').on('click', 'input', function(){
+$('.activities').on('click', 'input', function() {
     const $thisActivityCost = $(this).attr('data-cost').substring(1);
     const $thisActivityDateTime = $(this).attr('data-day-and-time');
     const $thisIsChecked = $(this).is(':checked');
@@ -72,7 +72,7 @@ $('.activities').on('click', 'input', function(){
     // grab the elements that have a type of checkbox but are not equal to the current element
     $('[type=checkbox]').not(this).each(function(index, input){
         // if this date time matches one of the input date time and has a disabled attribute then remove it (this means that you have unchecked the box)
-        if ($thisActivityDateTime === $(input).attr('data-day-and-time') && $(input).attr('disabled')){
+        if ($thisActivityDateTime === $(input).attr('data-day-and-time') && $(input).attr('disabled')) {
             $(input).removeAttr('disabled'); 
         // else if this date time matches another input add disabled class to the other input    
         } else if ($thisActivityDateTime === $(input).attr('data-day-and-time')) {
@@ -81,51 +81,73 @@ $('.activities').on('click', 'input', function(){
     });
 });
 
-// payment section
-$('#payment').on('change', function(){
+// payment section, show/hide certain fields depending upon which option is selected
+$('#payment').on('change', function() {
     const $selectedPayment = $('#payment option:selected').attr('value');
     $('#bitcoin, #credit-card, #paypal').hide()
     if ($selectedPayment === 'Credit Card') { 
         $('#credit-card').show();
     } else if ($selectedPayment === 'PayPal') {
         $('#paypal').show();
+        $('#cc-num, #zip, #cvv').val("");
     } else if ($selectedPayment === 'Bitcoin') {
         $('#bitcoin').show();
+        $('#cc-num, #zip, #cvv').val("");
     }
 });
 
-//form validation
-
-$('body').on('keyup blur', 'input', function(){
-    const $activeInput = $(this).attr('name');
-    const $activeInputVal = $(this).val();
-    const $applyInvalidBackground = function(element) {$(element).css('backgroundColor', 'red')};
-    const $removeInvalidBackground = function(element) {$(element).css('backgroundColor', '')};
-    
-    if ($activeInput === 'user-name') {
-        $('.error-name').remove();
-        $removeInvalidBackground($(this));
-        if ($activeInputVal.length === 0) {
-            $(this).prev().append('<span class="error-name" style="color: red;"> This field cannot be empty.</span>');
-            $applyInvalidBackground($(this));
+// form validation
+$('body').on('keyup blur', 'input,checkbox', function() {
+    // get active input name & value
+    const $activeElement = $(this).attr('name');
+    const $ccActive = $('#payment option:selected').attr('value') === 'Credit Card';
+    // set regex values to check against
+    const emailregex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const ccregex = /^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/;
+    const zipregex = /^\d{5}$/;
+    const cvvregex = /^\d{3}$/;
+    // set input background to red if error
+    const $applyInvalidBackground = function(element) {
+        $(element).css('backgroundColor', 'red');
+    }
+    // remove input background color
+    const $removeInvalidBackground = function(element) {
+        $(element).css('backgroundColor', '');
+    }
+    // function to throw field empty error of element its called in has a length of zero
+    const $emptyField = function(element) {
+        if ($(element).val().length === 0) {
+            $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field cannot be empty.</span>`);
+            $applyInvalidBackground($(element));
+        } 
+    }
+    // function to throw invalid format error if the element it is called on doesnt match the regex above
+    const $invalidFormat = function(element) {
+        if ($activeElement != 'user-name' && $activeElement != 'user-other-jobrole' && $(element).val().length != 0) {
+            //set which regex to use
+            let regex = null;
+            if ($activeElement === 'user-email') {
+                regex = emailregex;
+            } else if ($activeElement === 'user-cc-num') {
+                regex = ccregex;
+            } else if ($activeElement === 'user-zip') {
+                regex = zipregex;
+            } else if ($activeElement === 'user-cvv') {
+                regex = cvvregex;
+            }
+            //throw error if regex is not true
+            if (!regex.test($(element).val())) {
+                $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field is not properly formatted.</span>`);
+                $applyInvalidBackground($(element));
+            }
         }
     }
-
-    if ($activeInput === 'user-email') {
-        $('.error-email').remove();
+    // run above functions depending upon which input is active
+    if ($activeElement === 'user-name' || $activeElement === 'user-email' || $activeElement === 'user-other-jobrole' ||
+        ($ccActive && $activeElement === 'user-cc-num' || $activeElement === 'user-zip' || $activeElement === 'user-cvv')) {
+        $(`.error-${$activeElement}`).remove();
         $removeInvalidBackground($(this));
-        regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        
-        if ($activeInputVal.length === 0){
-            console.log('empty');
-            $(this).prev().append('<span class="error-email" style="color: red;"> This field cannot be empty.</span>');
-            $applyInvalidBackground($(this));
-        } else if (! regex.test($activeInputVal)) {
-            console.log('invalid');
-            $(this).prev().append('<span class="error-email" style="color: red;"> Your email is not properly formatted.</span>');
-            $applyInvalidBackground($(this));
-        }
+        $emptyField($(this));
+        $invalidFormat($(this));
     }
-    
-    ^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$;
 });
