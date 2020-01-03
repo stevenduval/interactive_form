@@ -147,7 +147,6 @@ const $invalidFormat = function(element, $activeElement) {
 const $boxChecked = function(element) {
     if ($(element).is(':checkbox')) {
         if ($('.activities span').length === 0) {
-            console.log('fire');
             $('.activities').prepend('<span class="error-select-one" style="color: red;"> Please select an activity.<br><br></span>');
         }    
     } 
