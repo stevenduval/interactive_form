@@ -3,11 +3,7 @@ Treehouse Techdegree:
 FSJS project 3 - Interactive Form
 ******************************************/
 
-//set global vars
-let activityTotal = 0;
-const $shirtOptions = $('#color option');
-
-//run on pageload
+// run on pageload
 $( document ).ready(function() {
     // focus on name input
     $('input#name').focus();
@@ -21,9 +17,14 @@ $( document ).ready(function() {
     $("#payment").val($("#payment option:eq(1)").val());
 });
 
+// set global vars
+let activityTotal = 0;
+const $shirtOptions = $('#color option');
+
 // job role section
 $('#title').on('change', function() {
     // get value of selected option
+    $('.error-user-other-jobrole').remove();
     const $selectedJob = $('#title option:selected').attr('value');
     // ensure that the other job role input is hidden until selected
     $('#other-jobrole').hide();
@@ -33,7 +34,7 @@ $('#title').on('change', function() {
     }  
 });
 
-// design section
+// design section event listener
 $('#design').on('change', function() {
     // get value of selected option
     const $selectedDesign = $('#design option:selected').attr('value');
@@ -57,8 +58,9 @@ $('#design').on('change', function() {
     });
 });
 
-// activity section
+// activity section click event listener
 $('.activities').on('click', 'input', function() {
+    $('.error-select-one').remove();
     const $thisActivityCost = $(this).attr('data-cost').substring(1);
     const $thisActivityDateTime = $(this).attr('data-day-and-time');
     const $thisIsChecked = $(this).is(':checked');
@@ -81,9 +83,12 @@ $('.activities').on('click', 'input', function() {
     });
 });
 
-// payment section, show/hide certain fields depending upon which option is selected
+// payment section event listener, show/hide certain fields depending upon which option is selected
 $('#payment').on('change', function() {
     const $selectedPayment = $('#payment option:selected').attr('value');
+    $('.error-user-cc-num').remove();
+    $('.error-user-zip').remove();
+    $('.error-user-cvv').remove();
     $('#bitcoin, #credit-card, #paypal').hide()
     if ($selectedPayment === 'Credit Card') { 
         $('#credit-card').show();
@@ -96,58 +101,81 @@ $('#payment').on('change', function() {
     }
 });
 
-// form validation
-$('body').on('keyup blur', 'input,checkbox', function() {
-    // get active input name & value
-    const $activeElement = $(this).attr('name');
-    const $ccActive = $('#payment option:selected').attr('value') === 'Credit Card';
-    // set regex values to check against
-    const emailregex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    const ccregex = /^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/;
-    const zipregex = /^\d{5}$/;
-    const cvvregex = /^\d{3}$/;
-    // set input background to red if error
-    const $applyInvalidBackground = function(element) {
-        $(element).css('backgroundColor', 'red');
-    }
-    // remove input background color
-    const $removeInvalidBackground = function(element) {
-        $(element).css('backgroundColor', '');
-    }
-    // function to throw field empty error of element its called in has a length of zero
-    const $emptyField = function(element) {
-        if ($(element).val().length === 0) {
-            $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field cannot be empty.</span>`);
-            $applyInvalidBackground($(element));
-        } 
-    }
-    // function to throw invalid format error if the element it is called on doesnt match the regex above
-    const $invalidFormat = function(element) {
-        if ($activeElement != 'user-name' && $activeElement != 'user-other-jobrole' && $(element).val().length != 0) {
-            //set which regex to use
-            let regex = null;
-            if ($activeElement === 'user-email') {
-                regex = emailregex;
-            } else if ($activeElement === 'user-cc-num') {
-                regex = ccregex;
-            } else if ($activeElement === 'user-zip') {
-                regex = zipregex;
-            } else if ($activeElement === 'user-cvv') {
-                regex = cvvregex;
-            }
-            //throw error if regex is not true
-            if (!regex.test($(element).val())) {
-                $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field is not properly formatted.</span>`);
-                $applyInvalidBackground($(element));
-            }
+// form validation section
+
+// set input border to red if error
+ const $applyInvalidBorder = function(element) {
+    $(element).css('border', '2px solid red');
+}
+// remove input border color
+const $removeInvalidBorder = function(element) {
+    $(element).css('border', '');
+}
+// function to throw field empty error if element its called in has a length of zero
+const $emptyField = function(element, $activeElement) {
+    if ($(element).val().length === 0 && !$(element).is(':checkbox') && $(element).css('display') != 'none' && $(element).parent().parent().css('display') != 'none') {
+        $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field cannot be empty.</span>`);
+        $applyInvalidBorder($(element));
+    } 
+}
+
+// function to throw invalid format error if the element it is called on doesnt match the regex listed
+const $invalidFormat = function(element, $activeElement) {
+    if ($activeElement != 'user-name' && $activeElement != 'user-other-jobrole' && $(element).val().length != 0 && !$(element).is(':checkbox')) {
+        const emailregex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const ccregex = /^[0-9]{13,16}$/;
+        const zipregex = /^\d{5}$/;
+        const cvvregex = /^\d{3}$/;
+        let regex = null;
+        if ($activeElement === 'user-email') {
+            regex = emailregex;
+        } else if ($activeElement === 'user-cc-num') {
+            regex = ccregex;
+        } else if ($activeElement === 'user-zip') {
+            regex = zipregex;
+        } else if ($activeElement === 'user-cvv') {
+            regex = cvvregex;
+        }
+        if (!regex.test($(element).val())) {
+            $(element).before(`<span class="error-${$activeElement}" style="color: red;"> This field is not properly formatted.</span>`);
+            $applyInvalidBorder($(element));
         }
     }
-    // run above functions depending upon which input is active
-    if ($activeElement === 'user-name' || $activeElement === 'user-email' || $activeElement === 'user-other-jobrole' ||
-        ($ccActive && $activeElement === 'user-cc-num' || $activeElement === 'user-zip' || $activeElement === 'user-cvv')) {
+}
+
+// function to insert message if no activities are selected on form submit
+const $boxChecked = function(element) {
+    if ($(element).is(':checkbox')) {
+        if ($('.activities span').length === 0) {
+            console.log('fire');
+            $('.activities').prepend('<span class="error-select-one" style="color: red;"> Please select an activity.<br><br></span>');
+        }    
+    } 
+}
+// event listener for all input fields, run above form validation functions on all inputs
+$('body').on('keyup blur', 'input', function() {
+    // get active input name & value
+    const $activeElement = $(this).attr('name');
+    $(`.error-${$activeElement}`).remove();
+    $removeInvalidBorder($(this));
+    $emptyField($(this), $activeElement);
+    $invalidFormat($(this), $activeElement);
+});
+
+//run form validation functions if register button is clicked
+$('button').on('click', function(e){
+    $('input').each(function(index, input){
+        const $activeElement = $(input).attr('name');
         $(`.error-${$activeElement}`).remove();
-        $removeInvalidBackground($(this));
-        $emptyField($(this));
-        $invalidFormat($(this));
+        $removeInvalidBorder($(this));
+        $emptyField($(this), $activeElement);
+        $invalidFormat($(this), $activeElement);
+        $boxChecked($(this));
+    });
+    //if error class exists on anything don't allow form to submit
+    if ($("[class*='error']").length === 0){
+        return true;
+    } else {
+        return false;
     }
 });
