@@ -4,7 +4,7 @@ Interactive Form
 
 ## Getting Started
 
-The jQuery code within this project adds form validation and interactive abilities to the form depending upon the options that are selected.
+The jQuery code within this project adds form validation and interactive functionality to the form depending upon the options that are selected.
 
 ### Installing
 
